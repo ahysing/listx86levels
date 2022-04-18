@@ -1784,18 +1784,15 @@ func pickRegisterName(operand string) string {
 	return operand
 }
 
-// 	https://www.cryptologie.net/article/406/simd-instructions-in-go
-var mmxRegisters = []string{
-	"X0", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8", "X9", "X10", "X11", "X12", "X13", "X14", "X15", "X16", "X17", "X18", "X19", "X20", "X21", "X22", "X23", "X24", "X25", "X26", "X28", "X29", "X30", "X31",
-}
-var avx512Registers = []string{
-	"Z0", "Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9", "Z10", "Z11", "Z12", "Z13", "Z14", "Z15", "Z16", "Z17", "Z18", "Z19", "Z20", "Z21", "Z22", "Z23", "Z24", "Z25", "Z26", "Z28", "Z29", "Z30", "Z31",
-}
 var avxRegisters = []string{
 	"Y0", "Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y10", "Y11", "Y12", "Y13", "Y14", "Y15", "Y16", "Y17", "Y18", "Y19", "Y20", "Y21", "Y22", "Y23", "Y24", "Y25", "Y26", "Y28", "Y29", "Y30", "Y31",
 }
 
-func Contains(collection []string, token string) bool {
+var avx512Registers = []string{
+	"Z0", "Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9", "Z10", "Z11", "Z12", "Z13", "Z14", "Z15", "Z16", "Z17", "Z18", "Z19", "Z20", "Z21", "Z22", "Z23", "Z24", "Z25", "Z26", "Z28", "Z29", "Z30", "Z31",
+}
+
+func contains(collection []string, token string) bool {
 	idx := sort.SearchStrings(collection, token)
 	return idx != len(collection) && idx >= 0 && collection[idx] == token
 }
@@ -1852,12 +1849,12 @@ func main() {
 					function = token
 				}
 
-				if Contains(x86SixyFourAssembly, token) && mode != v4 && mode != v3 && mode != v2 {
+				if contains(x86SixyFourAssembly, token) && mode != v4 && mode != v3 && mode != v2 {
 					mode = v1
 					instruction = token
 				}
 
-				if Contains(v2Assembly, token) && mode != v4 && mode != v3 {
+				if contains(v2Assembly, token) && mode != v4 && mode != v3 {
 					mode = v2
 					if verbose {
 						fmt.Println("Found v2 instruction", token, "in function", function, context)
@@ -1866,14 +1863,14 @@ func main() {
 
 				}
 
-				if Contains(v3Assembly, token) && mode != v4 {
+				if contains(v3Assembly, token) && mode != v4 {
 					mode = v3
-					if Contains(detectModeByRegisters, token) {
+					if contains(detectModeByRegisters, token) {
 						var registerOneRaw = strings.TrimRight(tokens[i+1], ",")
 						var registerTwoRaw = strings.TrimRight(tokens[i+2], ",")
 						var registerOne = pickRegisterName(registerOneRaw)
 						var registerTwo = pickRegisterName(registerTwoRaw)
-						if Contains(avxRegisters, registerOne) || Contains(avxRegisters, registerTwo) {
+						if contains(avxRegisters, registerOne) || contains(avxRegisters, registerTwo) {
 							mode = v3
 						} else {
 							mode = v2
@@ -1888,15 +1885,15 @@ func main() {
 					instruction = token
 				}
 
-				if Contains(v4Assembly, token) {
-					if Contains(detectModeByRegisters, token) {
+				if contains(v4Assembly, token) {
+					if contains(detectModeByRegisters, token) {
 						var registerOneRaw = strings.TrimRight(tokens[i+1], ",")
 						var registerTwoRaw = strings.TrimRight(tokens[i+2], ",")
 						var registerOne = pickRegisterName(registerOneRaw)
 						var registerTwo = pickRegisterName(registerTwoRaw)
-						if Contains(avx512Registers, registerOne) || Contains(avx512Registers, registerTwo) {
+						if contains(avx512Registers, registerOne) || contains(avx512Registers, registerTwo) {
 							mode = v4
-						} else if Contains(avxRegisters, registerOne) || Contains(avxRegisters, registerTwo) {
+						} else if contains(avxRegisters, registerOne) || contains(avxRegisters, registerTwo) {
 							mode = v3
 						} else {
 							mode = v2
