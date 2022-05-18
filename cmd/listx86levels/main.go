@@ -1764,6 +1764,21 @@ const (
 var findRegisterExpression *regexp.Regexp
 var findRegisterExpressionError error
 
+func printSorted(basket map[string]int) {
+	keys := make([]string, len(basket))
+	i := 0
+	for k := range basket {
+		keys[i] = k
+		i++
+	}
+
+	sort.Strings(keys)
+	for _, token := range keys {
+		count := basket[token]
+		fmt.Println("    ", token, count)
+	}
+}
+
 func init() {
 	findRegisterExpression, findRegisterExpressionError = regexp.Compile(`[^\(]*\(([^\(]*)\).*`)
 	sort.Strings(x86SixyFourAssembly)
@@ -1771,7 +1786,7 @@ func init() {
 	sort.Strings(v3Assembly)
 }
 
-func pickRegisterName(operand string) string {
+func PickRegisterName(operand string) string {
 	if findRegisterExpressionError != nil {
 		panic(findRegisterExpressionError)
 	}
@@ -1823,11 +1838,12 @@ func main() {
 	var scanner *bufio.Scanner
 	if inputFileName != "" {
 		reader, openErr := os.Open(inputFileName)
-		defer reader.Close()
 		if openErr != nil {
 			log.Printf("Failed opening file %s\n", inputFileName)
 			log.Panicln(openErr)
 		}
+
+		defer reader.Close()
 		scanner = bufio.NewScanner(reader)
 	} else {
 		scanner = bufio.NewScanner(os.Stdin)
@@ -1868,8 +1884,8 @@ func main() {
 					if contains(detectModeByRegisters, token) {
 						var registerOneRaw = strings.TrimRight(tokens[i+1], ",")
 						var registerTwoRaw = strings.TrimRight(tokens[i+2], ",")
-						var registerOne = pickRegisterName(registerOneRaw)
-						var registerTwo = pickRegisterName(registerTwoRaw)
+						var registerOne = PickRegisterName(registerOneRaw)
+						var registerTwo = PickRegisterName(registerTwoRaw)
 						if contains(avxRegisters, registerOne) || contains(avxRegisters, registerTwo) {
 							mode = v3
 						} else {
@@ -1889,8 +1905,8 @@ func main() {
 					if contains(detectModeByRegisters, token) {
 						var registerOneRaw = strings.TrimRight(tokens[i+1], ",")
 						var registerTwoRaw = strings.TrimRight(tokens[i+2], ",")
-						var registerOne = pickRegisterName(registerOneRaw)
-						var registerTwo = pickRegisterName(registerTwoRaw)
+						var registerOne = PickRegisterName(registerOneRaw)
+						var registerTwo = PickRegisterName(registerTwoRaw)
 						if contains(avx512Registers, registerOne) || contains(avx512Registers, registerTwo) {
 							mode = v4
 						} else if contains(avxRegisters, registerOne) || contains(avxRegisters, registerTwo) {
@@ -1950,33 +1966,25 @@ func main() {
 	if printStatistics {
 		fmt.Println("x86", operations[0])
 		if extended {
-			for token, count := range v1Count {
-				fmt.Println("    ", token, count)
-			}
+			printSorted(v1Count)
 		}
 		fmt.Println()
 
 		fmt.Println("v2", operations[1])
 		if extended {
-			for token, count := range v2Count {
-				fmt.Println("    ", token, count)
-			}
+			printSorted(v2Count)
 		}
 		fmt.Println()
 
 		fmt.Println("v3", operations[2])
 		if extended {
-			for token, count := range v3Count {
-				fmt.Println("    ", token, count)
-			}
+			printSorted(v3Count)
 		}
 		fmt.Println()
 
 		fmt.Println("v4", operations[3])
 		if extended {
-			for token, count := range v4Count {
-				fmt.Println("    ", token, count)
-			}
+			printSorted(v4Count)
 		}
 		fmt.Println()
 	}
